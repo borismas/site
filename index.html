@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>wtap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#040806;--bar:#020403;--ink:#c8f7d8;--mute:#5f8f71;--a:#39ff7a;--b:#19d3da;--line:57,255,122;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.7 "JetBrains Mono",ui-monospace,Menlo,monospace}
+canvas{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.bar{position:fixed;left:0;right:0;height:calc(5vh + env(safe-area-inset-top,0px));background:var(--bar);z-index:5;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);color:var(--mute);font-size:.85rem}
+.bar.top{top:0;padding-top:env(safe-area-inset-top,0px)}
+.bar.bot{bottom:0;height:calc(5vh + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+.prog{position:fixed;left:0;bottom:calc(5vh + env(safe-area-inset-bottom,0px));height:2px;background:var(--a);width:0;z-index:6}
+.scene{position:relative;z-index:2;height:190vh}
+.scene.first{height:170vh}
+.stage{position:sticky;top:0;height:100vh;display:flex;align-items:center;padding:8vh clamp(20px,8vw,120px)}
+.in{max-width:44rem;will-change:transform,opacity}
+h1,h2{font-family:"JetBrains Mono",ui-monospace,monospace;margin:0 0 .5em;letter-spacing:-.04em;line-height:1.1}
+h1{font-size:clamp(2.4rem,9vw,7rem);font-weight:700;color:var(--a);text-shadow:0 0 14px color-mix(in srgb,var(--a) 50%,transparent);animation:glitch .9s steps(1) 1.1s 1 both}
+h2{font-size:clamp(1.6rem,4.6vw,3.2rem);font-weight:700}
+.lede{font-size:clamp(1rem,2.2vw,1.4rem);color:var(--mute);max-width:34ch}
+.cmd{color:var(--a);margin:0 0 .6rem;font-size:.95rem;min-height:1.7em;white-space:pre}
+.cur{display:inline-block;width:.6em;height:1.1em;background:var(--a);vertical-align:-.2em;margin-left:.2em;animation:blink 1.1s steps(1) infinite}
+body::after{content:"";position:fixed;inset:0;z-index:9;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55))}
+@keyframes blink{50%{opacity:0}}
+@keyframes glitch{0%{transform:translateX(-6px);text-shadow:4px 0 #ff2e63,-4px 0 #19d3da}20%{transform:translateX(5px)}40%{transform:translateX(-3px);text-shadow:-3px 0 #ff2e63,3px 0 #19d3da}60%{transform:none}100%{text-shadow:0 0 14px color-mix(in srgb,var(--a) 50%,transparent)}}
+p{max-width:52ch;margin:0 0 1em}
+ul{list-style:none;margin:1.5rem 0 0;padding:0;border-left:2px solid var(--a)}
+li{padding:.6rem 0 .6rem 1.2rem}
+li b{color:var(--ink);font-family:"JetBrains Mono",ui-monospace,monospace;font-size:1.15rem;font-weight:700;display:block}
+li span{color:var(--mute)}
+a{color:var(--a);font-family:"JetBrains Mono",ui-monospace,monospace;font-weight:600;font-size:clamp(1.4rem,4vw,2.4rem);text-decoration:none;border-bottom:2px solid currentColor}
+a:focus-visible{outline:3px solid var(--b);outline-offset:6px}
+.w{display:inline-block;white-space:pre-wrap}
+li.w,p.w,.lede.w{display:block}
+.wide{max-width:64rem}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.4rem}
+@media (max-width:720px){.grid{grid-template-columns:1fr;gap:.6rem}}
+.term{display:block;border:1px solid color-mix(in srgb,var(--a) 30%,transparent);background:rgba(2,6,4,.78);border-radius:6px;margin-top:1.2rem;max-width:34rem;overflow:hidden}
+.grid .term{margin-top:0;max-width:none}
+.th{display:flex;align-items:center;gap:6px;padding:.45rem .8rem;border-bottom:1px solid color-mix(in srgb,var(--a) 20%,transparent);color:var(--mute);font-size:.8rem}
+.th i{width:9px;height:9px;border-radius:50%}
+.th i:nth-child(1){background:#ff5f56}.th i:nth-child(2){background:#ffbd2e}.th i:nth-child(3){background:#27c93f}
+.th span{margin-left:.5rem}
+.term pre{margin:0;padding:.8rem 1rem;font:inherit;font-size:.9rem;color:var(--ink);white-space:pre-wrap}
+.term p{margin:0;padding:.8rem 1rem;font-size:.9rem;color:var(--ink)}
+.sk{display:flex;align-items:center;gap:1rem;padding:.7rem 1rem 0}
+.sk span{width:5.5rem;color:var(--a)}
+.sk b{flex:1;height:10px;border:1px solid var(--a);padding:1px;display:block}
+.sk u{display:block;height:100%;width:0;background:var(--a);box-shadow:0 0 10px var(--a)}
+.hint{color:var(--mute);font-size:.85rem}
+@media (prefers-reduced-motion:reduce){.in{will-change:auto}h1,.cur{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="c" aria-hidden="true"></canvas>
+<div class="bar top"><span>wtap@home:~$</span><span id="tc">uptime 00:00</span></div>
+<div class="prog" id="prog"></div>
+<div class="bar bot"><span id="sc">scene 1/5</span><span>scroll to execute</span></div>
+
+<!-- Edit the text below: it's all yours. -->
+<main>
+<section class="scene first"><div class="stage"><div class="in">
+  <p class="cmd" id="hc">$ whoami</p>
+  <h1>I'm wtap</h1>
+</div></div></section>
+
+<section class="scene"><div class="stage"><div class="in">
+  <p class="cmd">$ cat origin.txt</p>
+  <h2>It started with Minecraft, getting into modding and scripting.</h2>
+  <div class="term w"><div class="th"><i></i><i></i><i></i><span>origin.log</span></div><pre>[ok] launched minecraft
+[ok] installed first mod
+[ok] wrote first script
+[!!] could not stop</pre></div>
+</div></div></section>
+
+<section class="scene"><div class="stage"><div class="in wide">
+  <p class="cmd">$ ls ~/projects</p>
+  <h2>Websites, bots, hacks.</h2>
+  <div class="grid">
+    <div class="term w"><div class="th"><i></i><i></i><i></i><span>websites/</span></div><p>Small sites and tools that run right in the browser.</p></div>
+    <div class="term w"><div class="th"><i></i><i></i><i></i><span>bots/</span></div><p>Scripts that do the boring stuff for me.</p></div>
+    <div class="term w"><div class="th"><i></i><i></i><i></i><span>hacks/</span></div><p>Poking at things to see how they work.</p></div>
+  </div>
+</div></div></section>
+
+<section class="scene"><div class="stage"><div class="in">
+  <p class="cmd">$ cat stack.conf</p>
+  <h2>I code strictly Java and Python.</h2>
+  <div class="term w"><div class="th"><i></i><i></i><i></i><span>stack.conf</span></div>
+    <div class="sk"><span>java</span><b><u></u></b></div>
+    <div class="sk"><span>python</span><b><u></u></b></div>
+    <pre>focus: modding, bots, automation</pre></div>
+</div></div></section>
+
+<section class="scene"><div class="stage"><div class="in">
+  <p class="cmd">$ exit 0</p>
+  <h2>That's a wrap.</h2>
+  <p class="w">Thanks for watching. Scroll up to run it again.</p>
+  <p class="w hint">psst: try typing "hack"</p>
+</div></div></section>
+</main>
+
+<script>
+(function(){
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+const N=96;let W,H,dpr,cols={},ry=[],mx=-999,my=-999,hack=false;const CH="01{}<>;/$#=[]";
+// seeded scatter
+let s=7;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+const base=Array.from({length:N},()=>[rnd(),rnd()]);
+const layouts=[
+ i=>base[i],
+ i=>{const c=12,r=Math.ceil(N/c);return[.14+.72*(i%c)/(c-1),.2+.6*Math.floor(i/c)/(r-1)]},
+ i=>{const a=i/N*Math.PI*2;return[.5+.3*Math.cos(a)*(H/W<1?H/W*1.6:1),.5+.3*Math.sin(a)]},
+ i=>[.06+.88*i/(N-1),.5+.22*Math.sin(i/N*Math.PI*4)],
+ i=>{const a=i*2.4,r=.02+.12*Math.sqrt(i/N);return[.5+r*Math.cos(a),.5+r*Math.sin(a)*1.2]}
+];
+const ease=t=>t*t*(3-2*t),clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
+function colors(){const st=getComputedStyle(document.documentElement);cols.line=st.getPropertyValue('--line').trim();cols.a=st.getPropertyValue('--a').trim();cols.b=st.getPropertyValue('--b').trim()}
+function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ry=Array.from({length:Math.ceil(W/18)},()=>Math.random()*H);colors()}
+addEventListener('resize',size);matchMedia('(prefers-color-scheme:light)').addEventListener('change',colors);size();
+
+const scenes=[...document.querySelectorAll('.scene')];
+const items=scenes.map(sc=>{const cmd=sc.querySelector('.cmd');return{sc,cmd,full:cmd?cmd.textContent:'',n:-1,inn:sc.querySelector('.in'),ws:[...sc.querySelectorAll('h2')].concat([...sc.querySelectorAll('.w')])}});
+const type=(it,n)=>{if(n===it.n)return;it.n=n;it.cmd.textContent=it.full.slice(0,n)+(n<it.full.length?'\u2588':'')};
+items[0].cmd.textContent='';let hn=0;setTimeout(function h(){type(items[0],hn++);if(hn<=items[0].full.length)setTimeout(h,90)},300);
+// split h2 into words
+items.forEach(it=>{const h=it.sc.querySelector('h2');if(!h)return;
+ const words=h.textContent.split(' ');h.textContent='';
+ const spans=words.map((t,k)=>{const sp=document.createElement('span');sp.className='w';sp.textContent=t+(k<words.length-1?' ':'');h.appendChild(sp);return sp});
+ it.ws=spans.concat([...it.sc.querySelectorAll('p.w,li.w')]);
+});
+
+let p=0,cur=0,tcShown='';
+function update(){
+ const max=document.documentElement.scrollHeight-innerHeight;
+ p=max>0?clamp(scrollY/max):0;
+ document.getElementById('prog').style.width=(p*100)+'%';
+ const secs=Math.round(p*90),tc=String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0');
+ if(tc!==tcShown){document.getElementById('tc').textContent='uptime '+tc;tcShown=tc}
+ let active=0;
+ items.forEach((it,idx)=>{
+  const r=it.sc.getBoundingClientRect(),span=r.height-innerHeight;
+  const t=clamp(-r.top/span);
+  if(r.top<innerHeight*.5)active=idx;
+  const first=idx===0;
+  if(!first&&it.cmd)type(it,Math.floor(clamp(t/.12)*it.full.length));
+  const op=(first?1:ease(clamp(t/.18)))*(1-ease(clamp((t-.82)/.18)));
+  it.sc.querySelectorAll('u').forEach(u=>u.style.width=(clamp((t-.3)/.3)*100)+'%');
+  it.inn.style.opacity=op;
+  it.inn.style.transform='translateY('+((.5-t)*50)+'px)';
+  const n=it.ws.length;
+  it.ws.forEach((w,k)=>{
+   const a=first?1:clamp((t*1.5-.05-k*(.8/n))*7);
+   w.style.opacity=.15+.85*a;
+   if(w.tagName!=='SPAN'||w.parentNode.tagName!=='H2')w.style.transform='translateY('+((1-a)*14)+'px)';
+  });
+ });
+ if(active!==cur||!document.getElementById('sc').dataset.i){cur=active;document.getElementById('sc').dataset.i=1;document.getElementById('sc').textContent='scene '+(active+1)+'/'+items.length}
+}
+function draw(time){
+ ctx.clearRect(0,0,W,H);
+ ctx.font='13px "JetBrains Mono",monospace';ctx.fillStyle='rgb('+cols.line+')';
+ const sp=reduce?0:(1+p*2.5)*(hack?3:1);
+ for(let c=0;c<ry.length;c++){
+  for(let k=0;k<8;k++){ctx.globalAlpha=.2*(1-k/8);ctx.fillText(CH[(c*7+k+Math.floor(ry[c]/18))%CH.length],c*18,ry[c]-k*16)}
+  ry[c]+=sp*(1+(c%5)*.4);if(ry[c]>H+140)ry[c]=-20-Math.random()*H*.5;
+ }
+ ctx.globalAlpha=1;
+ const f=p*(layouts.length-1),i0=Math.min(Math.floor(f),layouts.length-2),k=ease(f-i0);
+ const pts=[];
+ for(let i=0;i<N;i++){
+  const A=layouts[i0](i),B=layouts[i0+1](i);
+  const fl=reduce?0:Math.sin(time/1400+i)*5;
+  let x=(A[0]+(B[0]-A[0])*k)*W+fl,y=(A[1]+(B[1]-A[1])*k)*H+(reduce?0:Math.cos(time/1700+i*1.3)*5);
+  const dx=x-mx,dy=y-my,dd=Math.hypot(dx,dy);if(dd<130&&dd>0){const f=(130-dd)*.5;x+=dx/dd*f;y+=dy/dd*f}
+  pts.push([x,y]);
+ }
+ const lim=Math.min(W,H)*.2;
+ ctx.lineWidth=1;
+ for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+  const dx=pts[i][0]-pts[j][0],dy=pts[i][1]-pts[j][1],d=Math.hypot(dx,dy);
+  if(d<lim){ctx.strokeStyle='rgba('+cols.line+','+(.35*(1-d/lim))+')';ctx.beginPath();ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(pts[j][0],pts[j][1]);ctx.stroke()}
+ }
+ for(let i=0;i<N;i++){ctx.fillStyle=i%11===0?cols.a:cols.b;ctx.globalAlpha=i%11===0?1:.8;ctx.beginPath();ctx.arc(pts[i][0],pts[i][1],i%11===0?3.2:2,0,7);ctx.fill()}
+ ctx.globalAlpha=1;
+ if(!reduce)requestAnimationFrame(draw);
+}
+addEventListener('pointermove',e=>{mx=e.clientX;my=e.clientY});
+let kb='';addEventListener('keydown',e=>{kb=(kb+e.key).slice(-4).toLowerCase();if(kb==='hack'){hack=!hack;const r=document.documentElement.style;r.setProperty('--a',hack?'#ff2e63':'#39ff7a');r.setProperty('--line',hack?'255,46,99':'57,255,122');colors();if(reduce)draw(0)}});
+addEventListener('scroll',()=>{update();if(reduce)draw(0)},{passive:true});
+addEventListener('resize',()=>{update();if(reduce)draw(0)});
+update();requestAnimationFrame(draw);
+})();
+</script>
+<!-- Visitor counter -->
+<script data-goatcounter="https://wtap.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
